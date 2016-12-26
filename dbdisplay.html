@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    
+     <link rel="stylesheet" href="css/bootstrap.min.css">
+  <script src="js/jquery-2.1.4.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+        <title>Page Title</title>
+
+        <style type="text/css">
+            .wrapper{
+                border: 1px dashed red;
+                height: 150px;
+                overflow-x: hidden;
+                overflow-y: scroll;
+                width: 150px;
+            }
+            .wrapper .selection{
+                width:150px;
+                border:1px solid #ccc
+            }
+            
+        </style>
+
+        <script>
+        var global = new Array();
+        
+		function displayall(week) {
+			if (window.XMLHttpRequest) {
+                xmlhttp=new XMLHttpRequest();
+            }
+            else {
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+                    //document.getElementById("txt").innerHTML = this.responseText;
+                    myFunc2(this);
+                }
+            }
+            
+            // xmlhttp.open("GET","http://cspro.sogang.ac.kr/~cse20111659/test.php?week="+week+"&criteria="+criteria+"&txtHint="+txtHint, true);
+            xmlhttp.open("GET", "http://cspro.sogang.ac.kr/~cse20111659/billboard/feeelta/filename"+week+".xml", true);
+            xmlhttp.send();
+		}
+		
+		
+        function loadXML(week, criteria, txtHint) {
+            if (window.XMLHttpRequest) {
+                xmlhttp=new XMLHttpRequest();
+            }
+            else {
+                xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            
+            xmlhttp.onreadystatechange = function() {
+                if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+                    //document.getElementById("txt").innerHTML = this.responseText;
+                    myFunc(this, criteria, txtHint);
+                }
+            }
+            
+            // xmlhttp.open("GET","http://cspro.sogang.ac.kr/~cse20111659/test.php?week="+week+"&criteria="+criteria+"&txtHint="+txtHint, true);
+            xmlhttp.open("GET", "http://cspro.sogang.ac.kr/~cse20111659/billboard/feeelta/filename"+week+".xml", true);
+            xmlhttp.send();
+		}
+		
+		function myFunc(xml, criteria, txtHint) {
+	        var i, j;
+			var k = 0;
+			var flag = 0;
+			var xmlDoc = xml.responseXML;
+			var x = xmlDoc.getElementsByTagName(criteria);
+			var y = new Array();
+			
+			if(criteria == "Ranking") {
+				if(txtHint.length == 0) {
+					for(i=0;i<100;i++) {
+						y[i] = x[i].parentNode;
+						k = k + 1;
+					}
+				}
+				else {
+					for (i = 0; i <x.length; i++) { // 100 times
+			    		if(x[i].childNodes[0].nodeValue == txtHint) {
+			    			y[k] = x[i].parentNode;
+			    			k = k+1;
+			    		}
+					}
+				}
+			}
+			
+			else {
+				for (i = 0; i <x.length; i++) { // 100 times
+					for(j=0;j<txtHint.length;j++) { // txtHint len times
+		    			if(x[i].childNodes[0].nodeValue[j].toLowerCase() == txtHint[j].toLowerCase()) {
+		    				flag = flag +1;
+		    			}
+		    		}
+		    		if(flag == txtHint.length) {
+		    			y[k] = x[i].parentNode;
+		    			//window.alert(y[k].childNodes[0].childNodes[0].nodeValue);
+		    			k = k+1;
+		    		}	
+		    		flag = 0;
+		  		}
+			}
+			
+			// Here!!!!
+			if(k==0) document.getElementById("txt").innerHTML = "<p style='font-size:30pt;text-align:center;font-weight:bold'> No result! </p>";
+			else {
+				var bill = "<table border=1 > <tr> <th>Ranking</th><th>Artist</th><th>Title</th><th>Youtube</th> </tr>";
+				for(i=0;i<k;i++) {
+					bill += "<tr><th>"
+				    bill += y[i].childNodes[0].childNodes[0].nodeValue + "</th><th>";
+			    	bill += y[i].childNodes[1].childNodes[0].nodeValue + "</th><th>";
+			    	bill += y[i].childNodes[2].childNodes[0].nodeValue + "</th><th>";
+				    bill += "<button id=" + "button" + i   +" value=" + i   + " onclick=" + "feeel(getElementById('button"+ i + "').value)"  + ">link</button></th></tr>";
+			    	global[i] = y[i].childNodes[3].childNodes[0].nodeValue;
+	            }
+	            bill += "</table>";
+				document.getElementById("txt").innerHTML = bill;
+			}
+        }
+        
+        function feeel(num) {
+        	var result = "<iframe width=" + "420" +  " height="+ "315" + " src=" + "https://" + global[num] +"?autoplay=1" + "> </iframe>";
+        	document.getElementById("fr").innerHTML = result;
+        }
+        
+        function myFunc2(xml) {
+        	var i;
+        	var xmlDoc = xml.responseXML;
+			var x = xmlDoc.getElementsByTagName("Ranking");
+			var bill2 = "<table border=1 > <tr> <th>Ranking</th><th>Artist</th><th>Title</th><th>Youtube</th> </tr>";
+			for(i=0;i<100;i++) {
+				bill2 += "<tr><th>"
+			    bill2 += x[i].parentNode.childNodes[0].childNodes[0].nodeValue + "</th><th>";
+			    bill2 += x[i].parentNode.childNodes[1].childNodes[0].nodeValue + "</th><th>";
+			    bill2 += x[i].parentNode.childNodes[2].childNodes[0].nodeValue + "</th><th>";
+			    bill2 += "<button id=" + "button" + i   +" value=" + i   + " onclick=" + "feeel(getElementById('button"+ i + "').value)"  + ">link</button></th></tr>";
+			    global[i] = x[i].parentNode.childNodes[3].childNodes[0].nodeValue;
+            }
+            bill2 += "</table>";
+			document.getElementById("txt").innerHTML = bill2;
+			
+        }
+        
+        </script>
+    </head>
+
+    <body>
+    <a href="index.html"><button type="button" class="btn btn-warning">Back</button></a><br>
+        <select size="1" class="selection" id="week" onchange="displayall(document.getElementById('week').value)">
+            <option value = "">2016 : The Week of</option>
+            <option value = "1"> Jan 02 </option>
+            <option value = "2"> Jan 09 </option>
+            <option value = "3"> Jan 16 </option>
+            <option value = "4"> Jan 23 </option>
+            <option value = "5"> Jan 30 </option>
+            <option value = "6"> Feb 06 </option>
+            <option value = "7"> Feb 13 </option>
+            <option value = "8"> Feb 20 </option>
+            <option value = "9"> Feb 27 </option>
+            <option value = "10"> Mar 05 </option>
+            <option value = "11"> Mar 12 </option>
+            <option value = "12"> Mar 19 </option>
+            <option value = "13"> Mar 26 </option>
+            <option value = "14"> Apr 02 </option>
+            <option value = "15"> Apr 09 </option>
+            <option value = "16"> Apr 16 </option>
+            <option value = "17"> Apr 23 </option>
+            <option value = "18"> Apr 30 </option>
+            <option value = "19"> May 07 </option>
+            <option value = "20"> May 14 </option>
+            <option value = "21"> May 21 </option>
+            <option value = "22"> May 28 </option>
+            <option value = "23"> Jun 04 </option>
+            <option value = "24"> Jun 11 </option>
+            <option value = "25"> Jun 18 </option>
+            <option value = "26"> Jun 25 </option>
+            <option value = "27"> Jul 02 </option>
+            <option value = "28"> Jul 09 </option>
+            <option value = "29"> Jul 16 </option>
+            <option value = "30"> Jul 23 </option>
+            <option value = "31"> Jul 30 </option>
+            <option value = "32"> Aug 06 </option>
+            <option value = "33"> Aug 13 </option>
+            <option value = "34"> Aug 20 </option>
+            <option value = "35"> Aug 27 </option>
+            <option value = "36"> Sep 03 </option>
+            <option value = "37"> Sep 10 </option>
+            <option value = "38"> Sep 17 </option>
+            <option value = "39"> Sep 24 </option>
+            <option value = "40"> Oct 01 </option>
+            <option value = "41"> Oct 08 </option>
+            <option value = "42"> Oct 15 </option>
+            <option value = "43"> Oct 22 </option>
+            <option value = "44"> Oct 29 </option>
+            <option value = "45"> Nov 05 </option>
+            <option value = "46"> Nov 12 </option>
+            <option value = "47"> Nov 19 </option>
+            <option value = "48"> Nov 26 </option>
+            <option value = "49"> Dec 03 </option>
+            <option value = "50"> Dec 10 </option>
+            <option value = "51"> Dec 17 </option>
+            <option value = "52"> Dec 24 </option>
+            <option value = "53"> Dec 31 </option>
+
+        </select>
+        
+        <select size="1" class="selection"id="criteria">
+            <option value = "Ranking"> Ranking</option>
+            <option value = "Artist"> Artist</option>
+            <option value = "Title"> Title</option>
+        </select>
+        
+        <input type="text" name="searchbox" id="txtHint" onkeyup= "loadXML(document.getElementById('week').value, document.getElementById('criteria').value, this.value)">
+        
+        <div id="fr"> </div>
+        <div id="txt"> </div>
+        
+    </body>
+</html>
